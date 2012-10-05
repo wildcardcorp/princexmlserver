@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>Prince XML Server</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <link rel="shortcut icon" href="${request.static_url('princexmlserver:static/favicon.ico')}" />
+  <style>
+  body{
+    margin-top: 50px;
+  }
+  </style>
+</head>
+<body>
+   <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Prince XML Server</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <h1>Prince XML Server</h1>
+      <p>
+        Congraulations. Your Prince XML server is up and running.
+      </p>
+      <h2>Running Stats</h2>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <th>Number Converted</th>
+          <th>Average time to convert</th>
+        </thead>
+        <tbody>
+          <td>${number_converted}</td>
+          <td>${average_time} sec</td>
+        </tbody>
+      </table>
+    </div> <!-- /container -->
+</body>
+</html>
