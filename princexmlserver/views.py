@@ -1,5 +1,8 @@
 from pyramid.view import view_config
-from js.bootstrap import bootstrap_responsive_css
+try:
+    from js.bootstrap import bootstrap_responsive_css as bootstrap
+except:
+    from js.bootstrap import bootstrap
 import json
 from princexmlserver.converter import prince
 from pyramid.response import Response
@@ -8,17 +11,23 @@ import time
 
 
 def _need():
-    bootstrap_responsive_css.need()
+    bootstrap.need()
 
 
 @view_config(route_name='home', renderer='templates/index.pt')
 def my_view(req):
     _need()
     db = req.db
-    return {
-        'number_converted': db.get('number_converted'),
-        'average_time': "%0.2f" % db.get('average_time', 0.0)
-    }
+    try:
+        return {
+            'number_converted': db.get('number_converted'),
+            'average_time': "%0.2f" % db.get('average_time', 0.0)
+        }
+    except ImportError:
+        return {
+            'number_converted': 0,
+            'average_time': '0'
+        }
 
 
 def _stats(req, func, *args, **kwargs):
