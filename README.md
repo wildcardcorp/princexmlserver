@@ -22,7 +22,6 @@ Using git clone:
     ./bin/python setup.py develop
     ./bin/pserve production.ini
 
-
 Usage
 -----
 
