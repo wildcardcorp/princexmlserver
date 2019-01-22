@@ -1,4 +1,4 @@
-import anydbm
+import dbm
 import json
 
 
@@ -8,11 +8,11 @@ class Database(object):
 
     def _open(self, mode='r'):
         try:
-            return anydbm.open(self.filepath, mode)
-        except:
+            return dbm.open(self.filepath, mode)
+        except Exception:
             # might not be created yet, create, close
             # open again with whatever mode
-            db = anydbm.open(self.filepath, 'n')
+            db = dbm.open(self.filepath, 'n')
             db.close()
             return self._open(mode)
 

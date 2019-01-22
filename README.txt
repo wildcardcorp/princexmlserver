@@ -9,18 +9,18 @@ Requirements
 
 - Prince XML installed
 
+(tested with princexml 9)
 
 Install and Run
 ---------------
 
 Using git clone:
 
-    virtualenv princeserverenv
-    cd princeserverenv
-    git clone git@github.com:vangheem/princexmlserver.git
+    git clone git@github.com:wildcardcorp/princexmlserver.git
     cd princexmlserver
-    ../bin/python setup.py develop
-    ../bin/pserve production.ini
+    python -m venv .
+    ./bin/python setup.py develop
+    ./bin/pserve production.ini
 
 
 Usage

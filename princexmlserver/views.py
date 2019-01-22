@@ -1,22 +1,14 @@
-from pyramid.view import view_config
-try:
-    from js.bootstrap import bootstrap_responsive_css as bootstrap
-except:
-    from js.bootstrap import bootstrap
 import json
+import time
+from io import BytesIO
+
 from princexmlserver.converter import prince
 from pyramid.response import Response
-from StringIO import StringIO
-import time
-
-
-def _need():
-    bootstrap.need()
+from pyramid.view import view_config
 
 
 @view_config(route_name='home', renderer='templates/index.pt')
 def my_view(req):
-    _need()
     db = req.db
     try:
         return {
@@ -61,5 +53,5 @@ def convert(req):
         pdf = prince.create_pdf(xml, css, doctype)
 
     resp = Response(content_type='application/pdf')
-    resp.app_iter = StringIO(pdf)
+    resp.app_iter = BytesIO(pdf)
     return resp
