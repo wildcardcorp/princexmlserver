@@ -19,7 +19,7 @@ class Database(object):
     def get(self, name, default=None):
         db = self._open()
         try:
-            return json.loads(db[name])
+            return json.loads(db[name].decode('utf-8'))
         except KeyError:
             return default
 
