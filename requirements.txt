@@ -1,0 +1,23 @@
+-e .
+
+pyramid==1.3
+gunicorn==19.1.0
+js.bootstrap==3.2
+pyramid_fanstatic==0.5
+waitress==0.8.8
+pyramid_debugtoolbar==2.2
+PasteDeploy==1.5.2
+setuptools==7.0
+translationstring==1.2
+venusian==1.0a8
+zope.deprecation==4.1.1
+zope.interface==4.1.1
+repoze.lru==0.6
+WebOb==1.4
+Mako==1.0.0
+Chameleon==2.16
+js.jquery==1.9.1
+fanstatic==0.16
+Pygments==1.6
+pyramid_mako==0.3.1
+MarkupSafe==0.23

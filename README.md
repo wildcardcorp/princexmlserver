@@ -13,15 +13,13 @@ Requirements
 Install and Run
 ---------------
 
-Using git clone:
-
-    virtualenv princeserverenv
-    cd princeserverenv
-    git clone git@github.com:vangheem/princexmlserver.git
-    cd princexmlserver
-    ../bin/python setup.py develop
-    ../bin/pserve production.ini
-
+```
+git clone git@github.com:wildcardcorp/princexmlserver.git
+cd princexmlserver
+virtualenv --python=python2.7 env
+./env/bin/pip install -r requirements.txt
+./env/bin/pserve production.ini
+```
 
 Usage
 -----
