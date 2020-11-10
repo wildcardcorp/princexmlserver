@@ -7,16 +7,15 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'pyramid<=1.3',
-    'waitress',
-    'pyramid_fanstatic',
-    'js.bootstrap'
+    'pyramid>=1.10.1<=1.11.0',
+    'pyramid-chameleon',
+    'waitress'
     ]
 
 setup(name='princexmlserver',
       version='0.0',
       description='princexmlserver',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -33,9 +32,7 @@ setup(name='princexmlserver',
       install_requires=requires,
       tests_require=requires,
       test_suite="princexmlserver",
-      entry_points = """\
+      entry_points="""\
       [paste.app_factory]
       main = princexmlserver:main
-      """,
-      )
-
+      """)
