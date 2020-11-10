@@ -10,3 +10,7 @@ image:
 .PHONY=run
 run: image
 	docker run -p 6543:6543 wildcardcorp/princexmlserver:latest
+
+.PHONY=debug
+debug: image
+	docker run -i -t wildcardcorp/princexmlserver:latest /bin/bash
