@@ -30,11 +30,11 @@ Make post request to <server url>/convert with the follow
 parameters:
 
 * xml
- - `an xml string to convert to the pdf`
+  - `an xml string to convert to the pdf`
 * css
- - `a json encoded array of css files to use in the pdf generation`
+  - `a json encoded array of css files to use in the pdf generation`
 * doctype
- - `auto | xml | html | html5(default html)`
+  - `auto | xml | html | html5(default html)`
 
 
 Example using python requests package
