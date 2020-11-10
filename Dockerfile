@@ -1,6 +1,12 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install xfonts-utils \
+# upgrade ubuntu packages
+ENV DEBIAN_FRONTEND="noninteractive"
+RUN apt-get update
+RUN apt-get install apt-utils -y
+RUN apt-get upgrade -y
+
+RUN apt-get install xfonts-utils \
     cabextract python3 python3-pip apt-utils wget libcurl3-gnutls \
     libfontconfig1 libxml2 libtiff5 \
     libart-2.0-2 libjpeg62 libgif7 gsfonts -y
