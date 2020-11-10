@@ -14,3 +14,12 @@ run: image
 .PHONY=debug
 debug: image
 	docker run -i -t wildcardcorp/princexmlserver:latest /bin/bash
+
+.PHONY=freeze
+freeze:
+	pyenv install -s
+	python3 -m venv freeze-env
+	freeze-env/bin/python3 -m pip install -e .
+	freeze-env/bin/python3 -m pip freeze | grep "==" | tee requirements.txt
+	rm -rf freeze-env
+	git diff requirements.txt
