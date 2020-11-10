@@ -29,11 +29,11 @@ Usage
 Make post request to <server url>/convert with the follow 
 parameters:
 
-xml
+* xml
  - `an xml string to convert to the pdf`
-css
+* css
  - `a json encoded array of css files to use in the pdf generation`
-doctype
+* doctype
  - `auto | xml | html | html5(default html)`
 
 
