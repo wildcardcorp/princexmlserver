@@ -42,10 +42,6 @@ RUN pyenv install
 # upgrade pip
 RUN pip3 install --upgrade setuptools pip wheel
 
-# install app requirements
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
-
 # install app
 COPY princexmlserver/ ./princexmlserver
 COPY setup.py .
@@ -54,6 +50,10 @@ COPY README.md .
 COPY CHANGES.txt .
 COPY MANIFEST.in .
 RUN pip3 install -e .
+
+# install specific app requirements
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
 
 EXPOSE 6543
