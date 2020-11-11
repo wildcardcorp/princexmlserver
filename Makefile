@@ -6,6 +6,7 @@ help:
 .PHONY=image
 image:
 	docker build . -t wildcardcorp/princexmlserver:latest
+	docker tag wildcardcorp/princexmlserver:latest wildcardcorp/princexmlserver:$$(cat CHANGES.txt | head -n 1)
 
 .PHONY=run
 run: image
