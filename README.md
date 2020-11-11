@@ -23,6 +23,8 @@ Using git clone:
     ./bin/python setup.py develop
     ./bin/pserve production.ini
 
+If you have a princexml 9 license you can look at the provided `docker-compose.yml` file for an example of how to get your license onto the `princexmlserver` .
+
 Usage
 -----
 

@@ -11,6 +11,10 @@ image:
 run: image
 	docker run -p 6543:6543 wildcardcorp/princexmlserver:latest
 
+.PHONY=run-licensed
+run-licensed: image
+	docker-compose run --service-ports princexmlserver
+
 .PHONY=debug
 debug: image
 	docker run -i -t wildcardcorp/princexmlserver:latest /bin/bash
