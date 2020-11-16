@@ -10,6 +10,7 @@ logger = getLogger('princexmlserver')
 class PrinceSubProcess(object):
     default_paths = ['/bin', '/usr/bin', '/usr/local/bin']
     bin_name = 'prince'
+    basepath = None
 
     if os.name == 'nt':
         close_fds = False
@@ -20,7 +21,33 @@ class PrinceSubProcess(object):
         binary = self._findbinary()
         self.binary = binary
         if binary is None:
-            raise IOError("Unable to find %s binary" % self.bin_name)
+            raise IOError(f'Unable to find {self.bin_name} binary')
+
+    def _parse_static_resources(self, static_list, static_type):
+        cmd_addition = []
+        flag = '--script' if static_type == 'js' else '--style'
+        for index, data in enumerate(static_list):
+            path = self._get_path(f'{index}.{static_type}')
+            with open(path, 'w') as file:
+                file.write(data)
+            cmd_addition += [f'{flag}={path}']
+        return (locals().get('path', None), cmd_addition)
+
+    def _get_path(self, filename):
+        if self.basepath is None:
+            return
+        return os.path.join(self.basepath, filename)
+
+    def _notify_error(self, cmdformatted, process, output, error):
+        error = f"""Command
+{cmdformatted}
+finished with return code
+{process.returncode}
+and output:
+{output.decode('utf-8')}
+{error.decode('utf-8')}"""
+        logger.error(error)
+        raise Exception(error)
 
     def _findbinary(self):
         if 'PRINCE' in os.environ:
@@ -36,11 +63,19 @@ class PrinceSubProcess(object):
                 return fullname
         return None
 
-    def _run_command(self, cmd):
-        if isinstance(cmd, str):
-            cmd = cmd.split()
+    def _run_command(
+        self,
+        cmd,
+        outputpath=None,
+        script_file=None,
+        final_pass=True,
+    ):
+        # if isinstance(cmd, str):
+        #     cmd = cmd.split()
+        if final_pass:
+            cmd += [f'--output={outputpath}']
         cmdformatted = ' '.join(cmd)
-        logger.info("Running command %s" % cmdformatted)
+        logger.info(f'Running command {cmdformatted}')
         process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, close_fds=self.close_fds)
@@ -48,41 +83,66 @@ class PrinceSubProcess(object):
         process.stdout.close()
         process.stderr.close()
         if process.returncode != 0:
-            error = """Command
-%s
-finished with return code
-%i
-and output:
-%s
-%s""" % (
-                cmdformatted, process.returncode,
-                output.decode('utf-8'), error.decode('utf-8'))
-            logger.info(error)
-            raise Exception(error)
-        logger.info("Finished Running Command %s" % cmdformatted)
-        return output
+            self._notify_error(cmdformatted, process, output, error)
+        logger.info(f'Finished Running Command {cmdformatted}')
+        if os.path.exists(outputpath):
+            return output
+        if error:
+            if error.startswith(b'prince: error: page count greater than 1'):
+                with open(script_file, 'a+') as file:
+                    file.write('quarterInchPageHeight++;\n')
+        else:
+            final_pass = True
+        return self._run_command(
+            cmd,
+            outputpath=outputpath,
+            script_file=script_file,
+            final_pass=final_pass,
+        )
 
-    def create_pdf(self, html, css, doctype='html'):
-        basepath = mkdtemp()
-        xmlpath = os.path.join(basepath, 'index.html')
-        with open(xmlpath, 'w') as fi:
-            fi.write(html)
-        cmd = [self.binary, xmlpath, '-i %s' % doctype]
-        for idx, data in enumerate(css):
-            csspath = os.path.join(basepath, '%i.css' % idx)
-            with open(csspath, 'w') as fi:
-                fi.write(data)
-            cmd.append("-s %s" % csspath)
-        outputpath = os.path.join(basepath, 'output.pdf')
-        cmd.append('-o %s' % outputpath)
-        self._run_command(cmd)
-        with open(outputpath, 'rb') as fi:
-            data = fi.read()
-        shutil.rmtree(basepath)
+    def create_pdf(
+        self, 
+        html,
+        css=[],
+        js=[],
+        doctype='html',
+        enable_javascript=False
+    ):
+        self.basepath = mkdtemp()
+        xmlpath = self._get_path('index.html')
+        outputpath = self._get_path('output.pdf')
+        
+        with open(xmlpath, 'w') as xml_file:
+            xml_file.write(html)
+        
+        cmd = [
+            self.binary,
+            xmlpath,
+            f'--input={doctype}',
+            '--media=print',
+        ]
+
+        js_path, js_commands = self._parse_static_resources(js, 'js')
+        _, css_commands = self._parse_static_resources(css, 'css')
+        cmd += js_commands + css_commands
+        
+        if enable_javascript:
+            cmd += ['--javascript']
+
+        self._run_command(
+            cmd,
+            outputpath=outputpath,
+            script_file=js_path,
+            final_pass=(not js and not enable_javascript),
+        )
+        with open(outputpath, 'rb') as outfile:
+            data = outfile.read()
+        shutil.rmtree(self.basepath)
+        self.basepath = None
         return data
 
 
 try:
     prince = PrinceSubProcess()
 except IOError:
-    raise Exception("Error, no prince installation found.")
+    raise Exception('Error, no prince installation found.')

@@ -35,22 +35,45 @@ def _stats(req, func, *args, **kwargs):
     db.put('average_time', current_total / (float(number_converted) + 1.0))
     return result
 
+def safe_load_param(req, param_key):
+    try:
+        return json.loads(req.params[param_key])
+    except Exception:
+        return []
 
 @view_config(route_name='convert')
 def convert(req):
     """
     Post request variables:
         css: []  # json encoded
+        js: []  # json encoded
+        enable_javascript:  # true or false - whether to run js in html file or not
         xml: ""
         doctype: auto | xml | html | html5(default html)
     """
-    css = json.loads(req.params['css'])
+    css = safe_load_param(req, 'css')
+    js = safe_load_param(req, 'js')
     xml = req.params['xml']
     doctype = req.params.get('doctype', 'html')
+    enable_javascript = req.params.get('enable_javascript', False)
     if req.keep_stats:
-        pdf = _stats(req, prince.create_pdf, xml, css, doctype)
+        pdf = _stats(
+            req,
+            prince.create_pdf,
+            html=xml,
+            css=css,
+            js=js,
+            doctype=doctype,
+            enable_javascript=enable_javascript,
+        )
     else:
-        pdf = prince.create_pdf(xml, css, doctype)
+        pdf = prince.create_pdf(
+            html=xml,
+            css=css,
+            js=js,
+            doctype=doctype,
+            enable_javascript=enable_javascript,
+        )
 
     resp = Response(content_type='application/pdf')
     resp.app_iter = BytesIO(pdf)
