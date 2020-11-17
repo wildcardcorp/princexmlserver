@@ -1,3 +1,10 @@
+0.2
+---
+
+-  Allowed limited support for js files in Prince
+-  Added a hack to get pdf page size to "equal" content size
+
+
 0.1
 ---
 
