@@ -22,6 +22,19 @@ class PrinceSubProcess(object):
         self.binary = binary
         if binary is None:
             raise IOError(f'Unable to find {self.bin_name} binary')
+    
+    def _fix_page_height(self, error, script_file):
+        """
+        This is an awful hack to allows a user to tell Prince to set the page size to
+            a height that's full height of content ( with ε < 1/4"). It simply runs Prince,
+            with a js file that console.log()s 'error: page count greater than 1' every time
+            it's run until that's no longer true. If that error is returned, add a quarter
+            inch and rerun. Once there's no error, we run one final time to output to pdf.
+        """
+        if error.startswith(b'prince: error: page count greater than 1'):
+            with open(script_file, 'a+') as file:
+                file.write('(typeof quarterInchPageHeight !== "undefined") && quarterInchPageHeight++;\n')
+            return 'fixed'
 
     def _parse_static_resources(self, static_list, static_type):
         cmd_addition = []
@@ -88,9 +101,9 @@ and output:
         if os.path.exists(outputpath):
             return output
         if error:
-            if error.startswith(b'prince: error: page count greater than 1'):
-                with open(script_file, 'a+') as file:
-                    file.write('quarterInchPageHeight++;\n')
+            fixed = self._fix_page_height(error, script_file)
+            if fixed != 'fixed':
+                final_pass = True
         else:
             final_pass = True
         return self._run_command(
