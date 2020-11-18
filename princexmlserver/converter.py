@@ -33,7 +33,7 @@ class PrinceSubProcess(object):
         """
         if error.startswith(b'prince: error: page count greater than 1'):
             with open(script_file, 'a+') as file:
-                file.write('(typeof quarterInchPageHeight !== "undefined") && quarterInchPageHeight++;\n')
+                file.write('if (typeof quarterInchPageHeight !== "undefined") { quarterInchPageHeight++; }\n')
             return 'fixed'
 
     def _parse_static_resources(self, static_list, static_type):
