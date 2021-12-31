@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  princexmlserver:
+    image: wildcardcorp/princexmlserver:latest
+    volumes:
+      - ./license/:/usr/local/lib/prince/license/
+    ports:
+      - 6543:6543
