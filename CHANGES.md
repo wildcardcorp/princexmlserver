@@ -1,7 +1,7 @@
 PrinceXML Server
 ================
 
-0.2.0 (unreleased)
+0.2.0 (2023-01-12)
 ------------------
 
 - upgrade compatibility to princexml 15
