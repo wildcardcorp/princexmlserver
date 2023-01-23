@@ -1,7 +1,7 @@
 PrinceXML Server
 ================
 
-0.2.1 (unreleased)
+0.3.0 (2023-01-23)
 ------------------
 
 - add simple security policy
