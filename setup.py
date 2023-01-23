@@ -13,7 +13,7 @@ requires = [
     ]
 
 setup(name='princexmlserver',
-      version='0.3.0',
+      version='0.3.1.dev0',
       description='princexmlserver',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
