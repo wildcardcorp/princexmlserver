@@ -4,29 +4,29 @@ Introduction
 A simple pyramid server to convert html to PDFs with PrinceXML.
 
 
-Requirements
-------------
+## Requirements
 
 - Prince XML installed
 
-
 (tested with princexml 9)
 
-Install and Run
----------------
+
+## Install and Run
 
 Using git clone:
 
-    git clone git@github.com:wildcardcorp/princexmlserver.git
-    cd princexmlserver
-    python -m venv .
-    ./bin/python setup.py develop
-    ./bin/pserve production.ini
+```bash
+$ git clone git@github.com:wildcardcorp/princexmlserver.git
+$ cd princexmlserver
+$ python -m venv .
+$ ./bin/python setup.py develop
+$ ./bin/pserve production.ini
+```
 
 If you have a princexml 9 license you can look at the provided `docker-compose.yml` file for an example of how to get your license onto the `princexmlserver` .
 
-Usage
------
+
+## Usage
 
 Make post request to <server url>/convert with the follow 
 parameters:
@@ -39,14 +39,25 @@ parameters:
   - `auto | xml | html | html5(default html)`
 
 
-Example using python requests package
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Example using python requests package
 
 It's very simple to use with the requests package:
 
-    import requests
-    import json
-    requests.post('http://127.0.0.1:6543/convert', data={
-        'xml': '<html><body><h1>Foobar</h1></body></html>',
-        'css': json.dumps(['h1{color: red}'])
-    })
+```python
+import requests
+import json
+requests.post('http://127.0.0.1:6543/convert', data={
+    'xml': '<html><body><h1>Foobar</h1></body></html>',
+    'css': json.dumps(['h1{color: red}'])
+})
+```
+
+
+## Updating Pins
+
+Update `requirements.in` then compile with `pip-compile` from `pip-tools`, eg:
+
+```bash
+$ pip install pip-tools
+$ pip-compile requirements.in
+```

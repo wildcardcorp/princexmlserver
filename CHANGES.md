@@ -4,7 +4,10 @@ PrinceXML Server
 0.2.1 (unreleased)
 ------------------
 
-- nothing yet
+- add simple security policy
+- upgrade to pyramid 2.0
+- update requirements to be generated from `pip-compile` in `pip-tools` and to
+  use `requirements.in` as top-level pins
 
 
 0.2.0 (2023-01-12)

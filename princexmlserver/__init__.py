@@ -1,7 +1,9 @@
 from pyramid.config import Configurator
 from pyramid.request import Request as BaseRequest
-from princexmlserver.db import Database
 from pyramid.decorator import reify
+
+from princexmlserver.db import Database
+from princexmlserver.securitypolicy import PrinceXMLServerSecurityPolicy
 
 
 def main(global_config, **settings):
@@ -22,6 +24,7 @@ def main(global_config, **settings):
     config = Configurator(
         settings=settings,
         request_factory=Request)
+    config.set_security_policy(PrinceXMLServerSecurityPolicy())
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     config.add_route('convert', '/convert')

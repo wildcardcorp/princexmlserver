@@ -1,13 +1,13 @@
+from io import BytesIO
 import json
 import time
-from io import BytesIO
 
 from princexmlserver.converter import prince
 from pyramid.response import Response
 from pyramid.view import view_config
 
 
-@view_config(route_name='home', renderer='templates/index.pt')
+@view_config(route_name='home', renderer='templates/index.pt', permission='view')
 def my_view(req):
     db = req.db
     try:
@@ -36,7 +36,7 @@ def _stats(req, func, *args, **kwargs):
     return result
 
 
-@view_config(route_name='convert')
+@view_config(route_name='convert', permission='view')
 def convert(req):
     """
     Post request variables:

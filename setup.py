@@ -7,7 +7,7 @@ README = open(os.path.join(here, 'README.md')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.md')).read()
 
 requires = [
-    'pyramid>=1.10.1<=1.11.0',
+    'pyramid>=2.0',
     'pyramid-chameleon',
     'waitress'
     ]
