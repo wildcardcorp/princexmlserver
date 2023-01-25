@@ -7,6 +7,14 @@ from pyramid.response import Response
 from pyramid.view import view_config
 
 
+@view_config(route_name='ready')
+def ready(req):
+    binary = prince._findbinary()
+    if binary is None:
+        return Response(status_code=500, text='server misconfigured')
+    return Response(status_code=200, text='ready')
+
+
 @view_config(route_name='home', renderer='templates/index.pt', permission='view')
 def my_view(req):
     db = req.db
