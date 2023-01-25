@@ -1,7 +1,7 @@
 PrinceXML Server
 ================
 
-0.3.1 (unreleased)
+0.3.1 (2023-01-25)
 ------------------
 
 - add status/ready endpoint
