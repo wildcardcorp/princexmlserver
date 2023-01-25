@@ -1,11 +1,16 @@
+from datetime import datetime
 from io import BytesIO
-import json
-import time
-
 from princexmlserver.converter import prince
 from pyramid.response import Response
 from pyramid.view import view_config
+from statistics import mean
 
+import json
+import time
+
+
+def now_formatted():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 @view_config(route_name='ready')
 def ready(req):
@@ -19,28 +24,86 @@ def ready(req):
 def my_view(req):
     db = req.db
     try:
-        return {
-            'number_converted': db.get('number_converted'),
-            'average_time': "%0.2f" % db.get('average_time', 0.0)
+        earliest_stat_date = db.get('earliest_stat_date', now_formatted())
+        view_data = {
+            'stat_rows': [],
+            'earliest_stat_date': earliest_stat_date,
         }
+        conversion_stat_tags = json.loads(db.get('conversion_stat_tags', '["all"]'))
+        for conversion_stat_tag in conversion_stat_tags:
+            count = db.get(f'{conversion_stat_tag}_conversion_count', 0)
+            average_conversion_time = db.get(f'{conversion_stat_tag}_average_conversion_time', 0.0)
+            longest_conversion_time = db.get(f'{conversion_stat_tag}_longest_conversion_time', 0.0)
+
+            conversion_counts_by_uuid = json.loads(db.get(f'{conversion_stat_tag}_conversion_counts_by_uuid', '{}'))
+            conversion_counts = conversion_counts_by_uuid.values()
+            if len(conversion_counts):
+                average_conversions_per_object = round(mean(conversion_counts), 1)
+                max_conversions_per_object = max(conversion_counts)
+            else:
+                average_conversions_per_object = 'unavailable'
+                max_conversions_per_object = 'unavailable'
+
+            view_data['stat_rows'].append({
+                'tag_name': conversion_stat_tag,
+                'conversion_count': count,
+                'average_conversion_time': f'{round(average_conversion_time, 1)} sec',
+                'longest_conversion_time': f'{round(longest_conversion_time, 1)} sec',
+                'average_conversions_per_object': average_conversions_per_object,
+                'max_conversions_per_object': max_conversions_per_object,
+            })
+        return view_data
     except ImportError:
         return {
-            'number_converted': 0,
-            'average_time': '0'
+            'stat_rows': {
+                'tag_name': 'all',
+                'conversion_count': 'unavailable',
+                'average_conversion_time': 'unavailable',
+                'longest_conversion_time': 'unavailable',
+                'average_conversions_per_object': 'unavailable',
+                'max_conversions_per_object': 'unavailable',
+            },
+            'earliest_stat_date': now_formatted()
         }
 
 
-def _stats(req, func, *args, **kwargs):
+def _stats(req, func, xml, css, additional_args):
+    conversion_stat_tags = additional_args.get('conversion_stat_tags', [])
+    uuid = additional_args.get('uuid', None)
+
+    conversion_stat_tags.append('all')
+
     start = time.time()
-    result = func(*args, **kwargs)
-    timed = time.time() - start
+    result = func(xml, css, additional_args)
+    current_elapsed_time = time.time() - start
 
     db = req.db
-    number_converted = db.get('number_converted', 0)
-    current_average = db.get('average_time', 0.0)
-    current_total = (float(number_converted) * current_average) + timed
-    db.put('number_converted', number_converted + 1)
-    db.put('average_time', current_total / (float(number_converted) + 1.0))
+
+    all_conversion_stat_tags = set(json.loads(db.get('conversion_stat_tags', '[]')))
+    all_conversion_stat_tags.update(conversion_stat_tags)
+    db.put('conversion_stat_tags', json.dumps(list(all_conversion_stat_tags)))
+
+    earliest_stat_date = db.get('earliest_stat_date', None)
+    if earliest_stat_date is None:
+        db.put('earliest_stat_date', now_formatted())
+
+
+    for conversion_stat_tag in all_conversion_stat_tags:
+        conversion_count = db.get(f'{conversion_stat_tag}_conversion_count', 0)
+        average_conversion_time = db.get(f'{conversion_stat_tag}_average_conversion_time', 0.0)
+        longest_conversion_time = db.get(f'{conversion_stat_tag}_longest_conversion_time', 0.0)
+        new_total_conversion_time = (float(conversion_count) * average_conversion_time) + current_elapsed_time
+        db.put(f'{conversion_stat_tag}_conversion_count', conversion_count + 1)
+        db.put(f'{conversion_stat_tag}_average_conversion_time', new_total_conversion_time / (float(conversion_count) + 1.0))
+        if current_elapsed_time > longest_conversion_time:
+            db.put(f'{conversion_stat_tag}_longest_conversion_time', current_elapsed_time)
+
+        if uuid is not None:
+            conversion_counts_by_uuid = json.loads(db.get(f'{conversion_stat_tag}_conversion_counts_by_uuid', '{}'))
+            existing_uuid_count = conversion_counts_by_uuid.get(uuid, 0)
+            conversion_counts_by_uuid[uuid] = existing_uuid_count + 1
+            db.put(f'{conversion_stat_tag}_conversion_counts_by_uuid', json.dumps(conversion_counts_by_uuid))
+
     return result
 
 
@@ -48,18 +111,31 @@ def _stats(req, func, *args, **kwargs):
 def convert(req):
     """
     Post request variables:
-        css: []  # json encoded
         xml: ""
-        doctype: auto | xml | html | html5(default html)
+        css: []  # json encoded
+        additional_args: {
+            'doctype': auto | xml | html (default)
+            'pdf_profile': default 'PDF/UA-1' (see https://www.princexml.com/doc/prince-output/#pdf-versions-and-profiles for options)
+            'conversion_stat_tags': [str],
+            'uuid': str,
+        }
     """
-    css = json.loads(req.params['css'])
-    xml = req.params['xml']
-    doctype = req.params.get('doctype', 'html')
+    # this try/except will not throw an error if posted data is not a json string
+    # maybe we really want to let this throw the exception instead, and let castle
+    # catch and log it, which it's already doing
+    try:
+        data = req.json
+    except json.decoder.JSONDecodeError:
+        data = {}
+    css = data.get('css', [])
+    xml = data.get('xml', '')
+    additional_args = data.get('additional_args', {})
     if req.keep_stats:
-        pdf = _stats(req, prince.create_pdf, xml, css, doctype)
+        pdf = _stats(req, prince.create_pdf, xml, css, additional_args)
     else:
-        pdf = prince.create_pdf(xml, css, doctype)
+        pdf = prince.create_pdf(xml, css, additional_args)
 
     resp = Response(content_type='application/pdf')
     resp.app_iter = BytesIO(pdf)
     return resp
+

@@ -10,24 +10,18 @@ logger = getLogger('princexmlserver')
 class PrinceSubProcess(object):
     default_paths = ['/bin', '/usr/bin', '/usr/local/bin']
     bin_name = 'prince'
-
-    if os.name == 'nt':
-        close_fds = False
-    else:
-        close_fds = True
+    close_fds = os.name != 'nt'
 
     def __init__(self):
-        binary = self._findbinary()
-        self.binary = binary
-        if binary is None:
-            raise IOError("Unable to find %s binary" % self.bin_name)
+        self.binary = self._findbinary()
+        if self.binary is None:
+            raise IOError(f'Unable to find {self.bin_name} binary')
 
     def _findbinary(self):
         if 'PRINCE' in os.environ:
             return os.environ['PRINCE']
         if 'PATH' in os.environ:
-            path = os.environ['PATH']
-            path = path.split(os.pathsep)
+            path = (os.environ['PATH']).split(os.pathsep)
         else:
             path = self.default_paths
         for dir in path:
@@ -36,50 +30,45 @@ class PrinceSubProcess(object):
                 return fullname
         return None
 
-    def _run_command(self, cmd):
-        if isinstance(cmd, str):
-            cmd = cmd.split()
-        cmdformatted = ' '.join(cmd)
-        logger.info("Running command %s" % cmdformatted)
+    def _run_command(self, command, html):
+        if isinstance(command, str):
+            command = command.split()
+        formatted_command = ' '.join(command)
+        logger.info(f'Running command {formatted_command}')
         process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, close_fds=self.close_fds)
-        output, error = process.communicate()
-        process.stdout.close()
-        process.stderr.close()
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=self.close_fds,
+        )
+        output, error = process.communicate(html.encode('utf-8'))
         if process.returncode != 0:
-            error = """Command
-%s
+            error = f'''Command
+{formatted_command}
 finished with return code
-%i
+{process.returncode}
 and output:
-%s
-%s""" % (
-                cmdformatted, process.returncode,
-                output.decode('utf-8'), error.decode('utf-8'))
-            logger.info(error)
+{output.decode('utf-8')}
+{error.decode('utf-8')}'''
+            logger.error(error)
             raise Exception(error)
-        logger.info("Finished Running Command %s" % cmdformatted)
+        logger.info(f'Finished Running Command {formatted_command}')
         return output
 
-    def create_pdf(self, html, css, doctype='html'):
-        basepath = mkdtemp()
-        xmlpath = os.path.join(basepath, 'index.html')
-        with open(xmlpath, 'w') as fi:
-            fi.write(html)
-        cmd = [self.binary, xmlpath, '-i %s' % doctype]
-        for idx, data in enumerate(css):
-            csspath = os.path.join(basepath, '%i.css' % idx)
-            with open(csspath, 'w') as fi:
-                fi.write(data)
-            cmd.append("-s %s" % csspath)
-        outputpath = os.path.join(basepath, 'output.pdf')
-        cmd.append('-o %s' % outputpath)
-        self._run_command(cmd)
-        with open(outputpath, 'rb') as fi:
-            data = fi.read()
-        shutil.rmtree(basepath)
-        return data
+    def create_pdf(self, html, css, additional_args={}):
+        doctype = additional_args.get('doctype', 'html')
+        pdf_profile = additional_args.get('pdf_profile', 'PDF/UA-1')
+        temp_directory = mkdtemp()
+        command = [self.binary, '-', f'--input={doctype}', f'--pdf-profile={pdf_profile}']
+        for index, data in enumerate(css):
+            css_path = os.path.join(temp_directory, f'{index}.css')
+            with open(css_path, 'w') as css_file:
+                css_file.write(data)
+            command.append(f'--style={css_path}')
+        pdf_output = self._run_command(command, html)
+        shutil.rmtree(temp_directory)
+        return pdf_output
 
 
 try:
