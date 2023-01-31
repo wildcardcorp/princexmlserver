@@ -57,8 +57,15 @@
     <div class="container-fluid">
 
       <h1>Wildcard Prince XML Server (v15.1)</h1>
-      <p class="text-success">Prince XML server is up and running.</p>
-      <h2>Conversion Stats (since ${earliest_stat_date})</h2>
+      <p>
+        <b>Status:</b>
+        <b class="${server_status['class']}">
+          (${server_status['status_code']}) ${server_status['text']}
+        </b>
+      </p>
+      <br>
+      <br>
+      <h2 class="text-center">Conversion Stats (since ${earliest_stat_date})</h2>
       <table class="table table-striped table-hover table-bordered">
         <thead>
           <th>PDF Tag Name</th>

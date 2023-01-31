@@ -9,25 +9,22 @@ import json
 import time
 
 
-def now_formatted():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-
 @view_config(route_name='ready')
 def ready(req):
-    binary = prince._findbinary()
-    if binary is None:
-        return Response(status_code=500, text='server misconfigured')
-    return Response(status_code=200, text='ready')
+    server_status = _server_status()
+    del server_status['class']
+    return Response(**server_status)
 
 
 @view_config(route_name='home', renderer='templates/index.pt', permission='view')
 def my_view(req):
     db = req.db
     try:
-        earliest_stat_date = db.get('earliest_stat_date', now_formatted())
+        earliest_stat_date = db.get('earliest_stat_date', _now_formatted())
         view_data = {
             'stat_rows': [],
             'earliest_stat_date': earliest_stat_date,
+            'server_status': _server_status(),
         }
         conversion_stat_tags = json.loads(db.get('conversion_stat_tags', '["all"]'))
         for conversion_stat_tag in conversion_stat_tags:
@@ -63,7 +60,61 @@ def my_view(req):
                 'average_conversions_per_object': 'unavailable',
                 'max_conversions_per_object': 'unavailable',
             },
-            'earliest_stat_date': now_formatted()
+            'earliest_stat_date': _now_formatted(),
+            'server_status': _server_status(),
+        }
+
+
+@view_config(route_name='convert', permission='view')
+def convert(req):
+    """
+    Post request variables:
+        xml: ""
+        css: []  # json encoded
+        additional_args: {
+            'doctype': auto | xml | html (default)
+            'pdf_profile': default 'PDF/UA-1' (see https://www.princexml.com/doc/prince-output/#pdf-versions-and-profiles for options)
+            'conversion_stat_tags': [str],
+            'uuid': str,
+        }
+    """
+    # this try/except will not throw an error if posted data is not a json string
+    # maybe we really want to let this throw the exception instead, and let castle
+    # catch and log it, which it's already set up to do
+    try:
+        data = req.json
+    except json.decoder.JSONDecodeError:
+        data = {}
+    css = data.get('css', [])
+    xml = data.get('xml', '')
+    additional_args = data.get('additional_args', {})
+    if req.keep_stats:
+        pdf = _stats(req, prince.create_pdf, xml, css, additional_args)
+    else:
+        pdf = prince.create_pdf(xml, css, additional_args)
+
+    resp = Response(content_type='application/pdf')
+    resp.app_iter = BytesIO(pdf)
+    return resp
+
+
+def _now_formatted():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+
+def _server_status():
+    binary = prince._findbinary()
+    if binary is None:
+        return {
+            'status_code': 500,
+            'text': 'server misconfigured',
+            'class': 'text-danger',
+        }
+    else:
+        return {
+            'status_code': 200,
+            'text': 'ready',
+            'class': 'text-success',
         }
 
 
@@ -85,7 +136,7 @@ def _stats(req, func, xml, css, additional_args):
 
     earliest_stat_date = db.get('earliest_stat_date', None)
     if earliest_stat_date is None:
-        db.put('earliest_stat_date', now_formatted())
+        db.put('earliest_stat_date', _now_formatted())
 
 
     for conversion_stat_tag in all_conversion_stat_tags:
@@ -105,37 +156,4 @@ def _stats(req, func, xml, css, additional_args):
             db.put(f'{conversion_stat_tag}_conversion_counts_by_uuid', json.dumps(conversion_counts_by_uuid))
 
     return result
-
-
-@view_config(route_name='convert', permission='view')
-def convert(req):
-    """
-    Post request variables:
-        xml: ""
-        css: []  # json encoded
-        additional_args: {
-            'doctype': auto | xml | html (default)
-            'pdf_profile': default 'PDF/UA-1' (see https://www.princexml.com/doc/prince-output/#pdf-versions-and-profiles for options)
-            'conversion_stat_tags': [str],
-            'uuid': str,
-        }
-    """
-    # this try/except will not throw an error if posted data is not a json string
-    # maybe we really want to let this throw the exception instead, and let castle
-    # catch and log it, which it's already doing
-    try:
-        data = req.json
-    except json.decoder.JSONDecodeError:
-        data = {}
-    css = data.get('css', [])
-    xml = data.get('xml', '')
-    additional_args = data.get('additional_args', {})
-    if req.keep_stats:
-        pdf = _stats(req, prince.create_pdf, xml, css, additional_args)
-    else:
-        pdf = prince.create_pdf(xml, css, additional_args)
-
-    resp = Response(content_type='application/pdf')
-    resp.app_iter = BytesIO(pdf)
-    return resp
 
