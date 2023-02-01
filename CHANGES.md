@@ -4,7 +4,9 @@ PrinceXML Server
 0.3.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- additional stats kept and displayed
+- conversion changes for additional params
+- speed up conversion by writing fewer temp files
 
 
 0.3.1 (2023-01-25)

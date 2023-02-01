@@ -8,7 +8,8 @@ A simple pyramid server to convert html to PDFs with PrinceXML.
 
 - Prince XML installed
 
-(tested with princexml 9)
+
+(tested with princexml 15)
 
 
 ## Install and Run
@@ -23,12 +24,12 @@ $ ./bin/python setup.py develop
 $ ./bin/pserve production.ini
 ```
 
-If you have a princexml 9 license you can look at the provided `docker-compose.yml` file for an example of how to get your license onto the `princexmlserver` .
+If you have a princexml 15 license you can look at the provided `docker-compose.yml` file for an example of how to get your license onto the `princexmlserver` .
 
 
 ## Usage
 
-Make post request to <server url>/convert with the follow 
+Make post request to <server url>/convert with the follow
 parameters:
 
 * xml
@@ -36,7 +37,7 @@ parameters:
 * css
   - `a json encoded array of css files to use in the pdf generation`
 * doctype
-  - `auto | xml | html | html5(default html)`
+  - `auto | xml | html (default)`
 
 
 ### Example using python requests package

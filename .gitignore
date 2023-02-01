@@ -2,3 +2,8 @@
 *.pyc
 *.egg-info
 env/
+lib/
+bin/
+pyvenv.cfg
+princexmlserver.db
+.DS_Store

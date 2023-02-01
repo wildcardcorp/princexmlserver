@@ -1,51 +1,93 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!DOCTYPE
+  html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xml:lang="en"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+>
+
 <head>
   <title>Prince XML Server</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <link rel="shortcut icon" href="${request.static_url('princexmlserver:static/favicon.ico')}" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <meta
+    http-equiv="Content-Type"
+    content="text/html;charset=UTF-8"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+    crossorigin="anonymous"
+  >
   <style>
-  body{
-    padding-top: 60px;
-  }
+    body {
+      padding-top: 80px;
+    }
+
+    nav img {
+      height: 60px;
+    }
+
   </style>
 </head>
+
 <body>
-  <nav class="navbar navbar-default navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-6">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="/">PrinceXML Server</a>
-      </div>
+  <nav class="navbar fixed-top navbar-dark bg-dark">
+    <div class="container-fluid d-flex">
+      <img
+        src="../static/prince-banner.png"
+        alt="PrinceXML banner"
+        class="p-2"
+      />
+      <img
+        src="../static/Prince15-logo.png"
+        alt="PrinceXML version 15 icon"
+        class="me-auto p-2"
+      />
+      <img
+        src="../static/wildcard-logo.png"
+        alt="Wildcardcorp icon"
+        class="p-2"
+      />
     </div>
   </nav>
 
   <div class="container">
     <div class="container-fluid">
 
-      <h1>Prince XML Server</h1>
+      <h1>Wildcard Prince XML Server (v15.1)</h1>
       <p>
-        Congraulations. Your Prince XML server is up and running.
+        <b>Status:</b>
+        <b class="${server_status['class']}">
+          (${server_status['status_code']}) ${server_status['text']}
+        </b>
       </p>
-      <h2>Running Stats</h2>
-      <table class="table table-striped table-bordered">
+      <br>
+      <br>
+      <h2 class="text-center">Conversion Stats (since ${earliest_stat_date})</h2>
+      <table class="table table-striped table-hover table-bordered">
         <thead>
-          <th>Number Converted</th>
-          <th>Average time to convert</th>
+          <th>PDF Tag Name</th>
+          <th>Conversion Count</th>
+          <th>Average Conversion Time</th>
+          <th>Longest Conversion Time</th>
+          <th>Average Conversions / Object</th>
+          <th>Max Conversions / Object</th>
         </thead>
         <tbody>
-          <td>${number_converted}</td>
-          <td>${average_time} sec</td>
+          <tr tal:repeat="stat_row stat_rows">
+            <td>${stat_row['tag_name']}</td>
+            <td>${stat_row['conversion_count']}</td>
+            <td>${stat_row['average_conversion_time']}</td>
+            <td>${stat_row['longest_conversion_time']}</td>
+            <td>${stat_row['average_conversions_per_object']}</td>
+            <td>${stat_row['max_conversions_per_object']}</td>
+          </tr>
         </tbody>
       </table>
-    </div> <!-- /container -->
+    </div>
   </div>
 </body>
+
 </html>
