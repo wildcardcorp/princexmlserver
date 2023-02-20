@@ -9,13 +9,18 @@ from princexmlserver.securitypolicy import PrinceXMLServerSecurityPolicy
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    use_redis = settings.get('use_redis', False)
+    redis_url = settings.get('redis_url', 'redis://localhost:6379?health_check_interval=2')  # noqa
     dbfilepath = settings.get('dbfilepath', 'princexmlserver.db')
     keep_stats = settings.get('keep_stats', 'true').lower() == 'true'
 
     class Request(BaseRequest):
         @reify
         def db(self):
-            return Database(dbfilepath)
+            return Database(
+                filepath=dbfilepath,
+                use_redis=use_redis,
+                redis_url=redis_url)
 
         @reify
         def keep_stats(self):

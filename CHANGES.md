@@ -4,7 +4,7 @@ PrinceXML Server
 0.4.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- allow using redis as data store instead of dbm, optionally
 
 
 0.4.0 (2023-02-01)

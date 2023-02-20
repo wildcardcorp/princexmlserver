@@ -43,4 +43,4 @@ RUN pip3 install -r requirements.txt
 
 
 EXPOSE 6543
-CMD ["pserve", "/usr/src/app/production.ini"]
+CMD ["pserve", "/usr/src/app/production.ini", "use_redis=false", "redis_host=localhost"]

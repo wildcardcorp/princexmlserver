@@ -9,30 +9,34 @@ CHANGES = open(os.path.join(here, 'CHANGES.md')).read()
 requires = [
     'pyramid>=2.0',
     'pyramid-chameleon',
-    'waitress'
-    ]
+    'waitress',
+]
 
-setup(name='princexmlserver',
-      version='0.4.1.dev0',
-      description='princexmlserver',
-      long_description=README + '\n\n' + CHANGES,
-      classifiers=[
+setup(
+    name='princexmlserver',
+    version='0.4.1.dev0',
+    description='princexmlserver',
+    long_description=README + '\n\n' + CHANGES,
+    classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-        ],
-      author='',
-      author_email='',
-      url='',
-      keywords='web pyramid pylons',
-      packages=find_packages(),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=requires,
-      tests_require=requires,
-      test_suite="princexmlserver",
-      entry_points="""\
-      [paste.app_factory]
-      main = princexmlserver:main
-      """)
+    ],
+    author='',
+    author_email='',
+    url='',
+    keywords='web pyramid pylons',
+    packages=find_packages(),
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=requires,
+    tests_require=requires,
+    test_suite="princexmlserver",
+    extras_require={
+        "redis": [ "redis[hiredis]", ],
+    },
+    entry_points="""
+    [paste.app_factory]
+    main = princexmlserver:main
+    """)
