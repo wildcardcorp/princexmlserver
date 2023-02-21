@@ -1,7 +1,11 @@
+import logging
 import os
 
 from pyramid.authentication import extract_http_basic_credentials
 from pyramid.security import Allowed, Denied
+
+
+logger = logging.getLogger('princexmlserver')
 
 
 class PrinceXMLServerSecurityPolicy(object):

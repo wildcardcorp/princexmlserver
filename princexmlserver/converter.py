@@ -1,10 +1,10 @@
+import logging
 import os
 import shutil
 import subprocess
-from logging import getLogger
 from tempfile import mkdtemp
 
-logger = getLogger('princexmlserver')
+logger = logging.getLogger('princexmlserver')
 
 
 class PrinceSubProcess(object):
@@ -16,6 +16,9 @@ class PrinceSubProcess(object):
         self.binary = self._findbinary()
         if self.binary is None:
             raise IOError(f'Unable to find {self.bin_name} binary')
+        logging.info(f"selected `{self.binary}`")
+        proc = subprocess.run([self.binary, "--version"], capture_output=True)
+        logging.info(proc.stdout.decode('utf-8').replace("\\n", "\n"))
 
     def _findbinary(self):
         if 'PRINCE' in os.environ:
@@ -34,7 +37,8 @@ class PrinceSubProcess(object):
         if isinstance(command, str):
             command = command.split()
         formatted_command = ' '.join(command)
-        logger.info(f'Running command {formatted_command}')
+        logger.debug(f'Running command `{formatted_command}`')
+        logger.debug(html)
         process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -53,14 +57,22 @@ and output:
 {error.decode('utf-8')}'''
             logger.error(error)
             raise Exception(error)
-        logger.info(f'Finished Running Command {formatted_command}')
+        logger.info(f'Finished Running Command `{formatted_command}`')
         return output
 
     def create_pdf(self, html, css, additional_args={}):
         doctype = additional_args.get('doctype', 'html')
         pdf_profile = additional_args.get('pdf_profile', 'PDF/UA-1')
+        pdf_lang = additional_args.get('pdf_lang', 'en')
         temp_directory = mkdtemp()
-        command = [self.binary, '-', f'--input={doctype}', f'--pdf-profile={pdf_profile}']
+        logger.info(f"using tmp dir `{temp_directory}`")
+        command = [
+            self.binary,
+            '-',
+            f'--input={doctype}',
+            f'--pdf-profile="{pdf_profile}"',
+            f'--pdf-lang={pdf_lang}',
+        ]
         for index, data in enumerate(css):
             css_path = os.path.join(temp_directory, f'{index}.css')
             with open(css_path, 'w') as css_file:

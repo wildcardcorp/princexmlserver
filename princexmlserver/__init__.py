@@ -1,3 +1,5 @@
+import logging
+
 from pyramid.config import Configurator
 from pyramid.request import Request as BaseRequest
 from pyramid.decorator import reify
@@ -6,9 +8,15 @@ from princexmlserver.db import Database
 from princexmlserver.securitypolicy import PrinceXMLServerSecurityPolicy
 
 
+logger = logging.getLogger('princexmlserver')
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+
+    logger.info('configuring princexmlserver...')
+
     use_redis = settings.get('use_redis', False)
     redis_url = settings.get('redis_url', 'redis://localhost:6379?health_check_interval=2')  # noqa
     dbfilepath = settings.get('dbfilepath', 'princexmlserver.db')

@@ -1,12 +1,15 @@
 from collections.abc import MutableMapping
 import dbm
 import json
+import logging
 
 try:
     import redis
     REDIS_AVAILABLE = True
 except Exception:
     REDIS_AVAILABLE = False
+
+logger = logging.getLogger('princexmlserver')
 
 
 # really simple dict interface for redis
@@ -43,13 +46,20 @@ class Database(object):
 
     def _open(self, mode='r'):
         if self.use_redis and not REDIS_AVAILABLE:
+            logger.error('configured to use redis, but no redis available')
             raise ConnectionError("Cannot connect to redis, the 'redis' module is not available")
         elif self.use_redis:
+            logger.debug('using redis')
             return RedisDict(self.redis_url)
         else:
+            logger.debug('using dbm')
+            if self.filepath is None:
+                raise ConnectionError(
+                    "Cannot connect to dbm file, no filepath specified")
             try:
                 return dbm.open(self.filepath, mode)
             except Exception:
+                logger.info(f'trying to recreate {self.filepath}')
                 # might not be created yet, create, close
                 # open again with whatever mode
                 db = dbm.open(self.filepath, 'n')

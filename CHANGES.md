@@ -5,6 +5,9 @@ PrinceXML Server
 ------------------
 
 - allow using redis as data store instead of dbm, optionally
+- add/update logging statements
+- add pdf_lang additional_arg, default it to "en" (PDF/UA-1 profile in
+  prince expects a lang)
 
 
 0.4.0 (2023-02-01)
