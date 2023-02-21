@@ -77,7 +77,7 @@ def _stats(req, func, xml, css, additional_args):
 @view_config(route_name='ready')
 def ready(req):
     server_status = _server_status()
-    logger.info(f"reporting status ({server_status['code']}): {server_status['text']}")
+    logger.info(f"reporting status ({server_status['status_code']}): {server_status['text']}")
     del server_status['class']
     return Response(**server_status)
 
