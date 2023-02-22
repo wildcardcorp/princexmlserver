@@ -1,7 +1,7 @@
 PrinceXML Server
 ================
 
-1.0.0 (unreleased)
+1.0.0 (2023-02-22)
 ------------------
 
 - reorg project to separate test code and src
