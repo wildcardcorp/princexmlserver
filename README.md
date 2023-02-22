@@ -70,12 +70,12 @@ The `/convert` endpoint accepts a JSON document with the following possible
 properties (all of which are optional, though leaving out the 'xml' value might
 be fruitless):
 
-`xml`
-: default `""` -- the text of the document to be converted
-`css`
-: default [] -- a list of css documents (as strings) to be applied
-`additional_args`
-: default {} -- a dictionary of additional options for both the service and PrinceXML, such as `doctype`, `pdf_profile`, etc
+* `xml`
+  * default `""` -- the text of the document to be converted
+* `css`
+  * default [] -- a list of css documents (as strings) to be applied
+* `additional_args`
+  * default {} -- a dictionary of additional options for both the service and PrinceXML, such as `doctype`, `pdf_profile`, etc
 
 See `example.py` for an example of how to use the service inside a
 Python script that makes use of the `requests` library.
