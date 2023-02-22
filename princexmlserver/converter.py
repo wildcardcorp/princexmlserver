@@ -70,7 +70,7 @@ and output:
             self.binary,
             '-',
             f'--input={doctype}',
-            f'--pdf-profile="{pdf_profile}"',
+            f'--pdf-profile={pdf_profile}',
             f'--pdf-lang={pdf_lang}',
         ]
         for index, data in enumerate(css):
