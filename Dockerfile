@@ -47,4 +47,4 @@ RUN pip3 install /usr/src/*.whl
 
 
 EXPOSE 6543
-CMD ["pserve", "/usr/src/app/docker.ini", "use_redis=false", "redis_host=localhost"]
+CMD ["pserve", "/usr/src/app/docker.ini", "use_redis=false", "redis_host=localhost", "log_level=INFO"]

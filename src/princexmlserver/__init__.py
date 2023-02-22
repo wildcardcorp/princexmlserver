@@ -26,10 +26,20 @@ logger = logging.getLogger('princexmlserver')
 def main(global_config, **settings):
     logger.info('configuring princexmlserver...')
 
-    use_redis = settings.get('use_redis', False)
+    logger.debug(global_config)
+    logger.debug(settings)
+
+    logger.info(f"use_redis: {global_config.get('use_redis', 'not configured')}")
+    logger.info(f"redis_url: {settings.get('redis_url', 'not configured')}")
+    logger.info(f"dbfilepath: {settings.get('dbfilepath', 'not configured')}")
+
+    use_redis = global_config.get('use_redis', 'false').strip().lower() == 'true'
     redis_url = settings.get('redis_url', 'redis://localhost:6379?health_check_interval=2')
     dbfilepath = settings.get('dbfilepath', 'princexmlserver.db')
-    settings["db"] = Database(filepath=dbfilepath, use_redis=use_redis, redis_url=redis_url)
+    settings["db"] = Database(
+        filepath=dbfilepath,
+        use_redis=use_redis,
+        redis_url=redis_url)
 
     config = Configurator(settings=settings)
     config.set_security_policy(PrinceXMLServerSecurityPolicy())

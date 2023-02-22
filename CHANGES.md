@@ -18,6 +18,8 @@ PrinceXML Server
 - remove custom Request factor on configurator, and move the custom properties to
   settings in the registry
 - prep for 1.0.0 release
+- add configurable log_level
+- add workaround for some issue where use_redis not properly interpolated in ini
 
 
 0.5.2 (2023-02-21)
