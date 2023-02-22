@@ -1,3 +1,17 @@
+# Copyright 2023 Wildcard Corp.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from datetime import datetime
 from io import BytesIO
 import json
@@ -6,7 +20,7 @@ from statistics import mean
 import time
 
 from princexmlserver.converter import prince
-from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -44,7 +58,10 @@ def _stats(req, func, xml, css, additional_args):
     result = func(xml, css, additional_args)
     current_elapsed_time = time.time() - start
 
-    db = req.db
+    db = req.registry.settings.get("db", None)
+    if db is None:
+        logger.error("database not configured")
+        raise HTTPInternalServerError()
 
     all_conversion_stat_tags = set(json.loads(db.get('conversion_stat_tags', '[]')))
     all_conversion_stat_tags.update(conversion_stat_tags)
@@ -83,52 +100,43 @@ def ready(req):
 
 
 @view_config(route_name='home', renderer='templates/index.pt', permission='view')
-def my_view(req):
-    db = req.db
-    try:
-        earliest_stat_date = db.get('earliest_stat_date', _now_formatted())
-        view_data = {
-            'stat_rows': [],
-            'earliest_stat_date': earliest_stat_date,
-            'server_status': _server_status(),
-        }
-        conversion_stat_tags = json.loads(db.get('conversion_stat_tags', '["all"]'))
-        for conversion_stat_tag in conversion_stat_tags:
-            count = db.get(f'{conversion_stat_tag}_conversion_count', 0)
-            average_conversion_time = db.get(f'{conversion_stat_tag}_average_conversion_time', 0.0)
-            longest_conversion_time = db.get(f'{conversion_stat_tag}_longest_conversion_time', 0.0)
+def home(req):
+    db = req.registry.settings.get("db", None)
+    if db is None:
+        logger.error("database not configured")
+        raise HTTPInternalServerError()
 
-            conversion_counts_by_uuid = json.loads(db.get(f'{conversion_stat_tag}_conversion_counts_by_uuid', '{}'))
-            conversion_counts = conversion_counts_by_uuid.values()
-            if len(conversion_counts):
-                average_conversions_per_object = round(mean(conversion_counts), 1)
-                max_conversions_per_object = max(conversion_counts)
-            else:
-                average_conversions_per_object = 'unavailable'
-                max_conversions_per_object = 'unavailable'
+    earliest_stat_date = db.get('earliest_stat_date', _now_formatted())
+    view_data = {
+        'stat_rows': [],
+        'earliest_stat_date': earliest_stat_date,
+        'server_status': _server_status(),
+    }
+    conversion_stat_tags = json.loads(db.get('conversion_stat_tags', '["all"]'))
+    for conversion_stat_tag in conversion_stat_tags:
+        count = db.get(f'{conversion_stat_tag}_conversion_count', 0)
+        average_conversion_time = db.get(f'{conversion_stat_tag}_average_conversion_time', 0.0)
+        longest_conversion_time = db.get(f'{conversion_stat_tag}_longest_conversion_time', 0.0)
 
-            view_data['stat_rows'].append({
-                'tag_name': conversion_stat_tag,
-                'conversion_count': count,
-                'average_conversion_time': f'{round(average_conversion_time, 1)} sec',
-                'longest_conversion_time': f'{round(longest_conversion_time, 1)} sec',
-                'average_conversions_per_object': average_conversions_per_object,
-                'max_conversions_per_object': max_conversions_per_object,
-            })
-        return view_data
-    except ImportError:
-        return {
-            'stat_rows': {
-                'tag_name': 'all',
-                'conversion_count': 'unavailable',
-                'average_conversion_time': 'unavailable',
-                'longest_conversion_time': 'unavailable',
-                'average_conversions_per_object': 'unavailable',
-                'max_conversions_per_object': 'unavailable',
-            },
-            'earliest_stat_date': _now_formatted(),
-            'server_status': _server_status(),
-        }
+        conversion_counts_by_uuid = json.loads(db.get(f'{conversion_stat_tag}_conversion_counts_by_uuid', '{}'))
+        conversion_counts = conversion_counts_by_uuid.values()
+        if len(conversion_counts):
+            average_conversions_per_object = round(mean(conversion_counts), 1)
+            max_conversions_per_object = max(conversion_counts)
+        else:
+            average_conversions_per_object = 'unavailable'
+            max_conversions_per_object = 'unavailable'
+
+        view_data['stat_rows'].append({
+            'tag_name': conversion_stat_tag,
+            'conversion_count': count,
+            'average_conversion_time': f'{round(average_conversion_time, 1)} sec',
+            'longest_conversion_time': f'{round(longest_conversion_time, 1)} sec',
+            'average_conversions_per_object': average_conversions_per_object,
+            'max_conversions_per_object': max_conversions_per_object,
+        })
+
+    return view_data
 
 
 @view_config(route_name='convert', permission='view')
@@ -155,7 +163,7 @@ def convert(req):
     css = data.get('css', [])
     xml = data.get('xml', '')
     additional_args = data.get('additional_args', {})
-    if req.keep_stats:
+    if req.registry.settings.get('keep_stats', False):
         pdf = _stats(req, prince.create_pdf, xml, css, additional_args)
     else:
         pdf = prince.create_pdf(xml, css, additional_args)

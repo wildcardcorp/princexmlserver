@@ -1,5 +1,4 @@
 import requests
-import json
 
 resp = requests.post('http://127.0.0.1:6543/convert', json={
     'doctype': 'html',

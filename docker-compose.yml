@@ -1,7 +1,15 @@
 version: "3.8"
 services:
+  redis:
+    image: redis:latest
   princexmlserver:
-    image: wildcardcorp/princexmlserver:latest
+    build: .
+    image: princexmlserver:dev
+    command:
+      - pserve
+      - /usr/src/app/docker.ini
+      - use_redis=true
+      - redis_host=redis
     volumes:
       - ./license/:/usr/local/lib/prince/license/
     ports:

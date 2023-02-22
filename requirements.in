@@ -1,4 +1,4 @@
-pyramid==2.0
-pyramid-chameleon==0.3
-waitress==2.1.2
+pyramid>=2.0
+pyramid-chameleon>=0.3
+waitress>=2.1.2
 redis[hiredis]

@@ -1,5 +1,15 @@
 FROM python:3.9-bullseye
 
+WORKDIR /usr/src/app/
+
+COPY . .
+
+RUN pip3 install -U setuptools pip wheel \
+    && python setup.py bdist_wheel
+
+
+FROM python:3.9-bullseye
+
 # upgrade ubuntu packages
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get update \
@@ -29,18 +39,12 @@ WORKDIR /usr/src/app
 RUN pip3 install --upgrade setuptools pip wheel
 
 # install app
-COPY princexmlserver/ ./princexmlserver
-COPY setup.py .
-COPY production.ini .
-COPY README.md .
-COPY CHANGES.md .
-COPY MANIFEST.in .
-RUN pip3 install -e .
-
-# install specific app requirements
+COPY --from=0 /usr/src/app/dist/*.whl /usr/src/
+COPY docker.ini .
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
+RUN pip3 install /usr/src/*.whl
 
 
 EXPOSE 6543
-CMD ["pserve", "/usr/src/app/production.ini", "use_redis=false", "redis_host=localhost"]
+CMD ["pserve", "/usr/src/app/docker.ini", "use_redis=false", "redis_host=localhost"]

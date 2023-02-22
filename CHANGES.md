@@ -1,10 +1,23 @@
 PrinceXML Server
 ================
 
-0.5.3 (unreleased)
+1.0.0 (unreleased)
 ------------------
 
-- nothing yet
+- reorg project to separate test code and src
+- update setup.py attributes
+- add OSS license information
+- update Dockerfile to be multi-stage and install princexmlserver through built wheel
+- add development.ini and rename production.ini to docker.ini
+- move test.py to example.py
+- improve test configuration, and add a couple of basic tests as an example
+- update requirements.in to be less specific
+- update documentation (readme)
+- update Makefile targets
+- update docker-compose config
+- remove custom Request factor on configurator, and move the custom properties to
+  settings in the registry
+- prep for 1.0.0 release
 
 
 0.5.2 (2023-02-21)

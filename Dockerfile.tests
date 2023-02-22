@@ -1,0 +1,9 @@
+FROM princexmlserver:dev
+
+WORKDIR /usr/src/app/
+
+COPY . .
+
+RUN pip install -e .[tests]
+
+CMD [ "pytest", "--cov=princexmlserver" ]

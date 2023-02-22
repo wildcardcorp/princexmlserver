@@ -7,3 +7,4 @@ bin/
 pyvenv.cfg
 princexmlserver.db
 .DS_Store
+.coverage
