@@ -1,2 +1,14 @@
 include *.txt *.ini *.cfg *.rst
 recursive-include princexmlserver *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
+
+# added by check-manifest
+include *.in
+include *.md
+include *.py
+include *.tests
+include *.yml
+include Dockerfile
+include Makefile
+recursive-include src *.png
+recursive-include src *.pt
+recursive-include tests *.py
