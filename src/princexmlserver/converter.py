@@ -78,6 +78,11 @@ and output:
         doctype = additional_args.get('doctype', 'html')
         pdf_profile = additional_args.get('pdf_profile', 'PDF/UA-1')
         pdf_lang = additional_args.get('pdf_lang', 'en')
+        pdf_title = additional_args.get('pdf_title', None)
+        pdf_subject = additional_args.get('pdf_subject', None)
+        pdf_author = additional_args.get('pdf_author', None)
+        pdf_keywords = additional_args.get('pdf_keywords', None)
+        pdf_creator = additional_args.get('pdf_creator', None)
         temp_directory = mkdtemp()
         logger.info(f"using tmp dir `{temp_directory}`")
         command = [
@@ -87,6 +92,17 @@ and output:
             f'--pdf-profile={pdf_profile}',
             f'--pdf-lang={pdf_lang}',
         ]
+        if pdf_title is not None:
+            command.append(f'--pdf-title={pdf_title}')
+        if pdf_subject is not None:
+            command.append(f'--pdf-subject={pdf_subject}')
+        if pdf_author is not None:
+            command.append(f'--pdf-author={pdf_author}')
+        if pdf_keywords is not None:
+            command.append(f'--pdf-keywords={pdf_keywords}')
+        if pdf_creator is not None:
+            command.append(f'--pdf-creator={pdf_creator}')
+
         for index, data in enumerate(css):
             css_path = os.path.join(temp_directory, f'{index}.css')
             with open(css_path, 'w') as css_file:
