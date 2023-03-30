@@ -4,7 +4,7 @@ PrinceXML Server
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- add pdf metadata
 
 
 1.0.0 (2023-02-22)
